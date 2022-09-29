@@ -3,25 +3,25 @@ package trofers.common.trophy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import io.github.fabricators_of_create.porting_lib.crafting.CraftingHelper;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.conditions.ICondition;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.network.PacketDistributor;
 import trofers.Trofers;
 import trofers.common.network.NetworkHandler;
 import trofers.common.network.TrophySyncPacket;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TrophyManager extends SimpleJsonResourceReloadListener {
+public class TrophyManager extends SimpleJsonResourceReloadListener implements IdentifiableResourceReloadListener {
 
     protected static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
@@ -52,7 +52,7 @@ public class TrophyManager extends SimpleJsonResourceReloadListener {
             ResourceLocation id = entry.getKey();
             JsonElement element = entry.getValue();
             try {
-                if (element.isJsonObject() && element.getAsJsonObject().has("conditions") && !CraftingHelper.processConditions(GsonHelper.getAsJsonArray(element.getAsJsonObject(), "conditions"), ICondition.IContext.EMPTY)) {
+                if (element.isJsonObject() && element.getAsJsonObject().has("conditions") && !CraftingHelper.processConditions(GsonHelper.getAsJsonArray(element.getAsJsonObject(), "conditions"))) {
                     amountSkipped++;
                 } else {
                     trophies.put(id, Trophy.fromJson(element, id));
@@ -70,15 +70,20 @@ public class TrophyManager extends SimpleJsonResourceReloadListener {
         setTrophies(trophies);
     }
 
-    public static void onDataPackReload(OnDatapackSyncEvent event) {
-        if (event.getPlayer() != null) {
-            sync(event.getPlayer());
+    public static void onDataPackReload(PlayerList playerList, @Nullable ServerPlayer player) {
+        if (player != null) {
+            sync(player);
         } else {
-            event.getPlayerList().getPlayers().forEach(TrophyManager::sync);
+            playerList.getPlayers().forEach(TrophyManager::sync);
         }
     }
 
     private static void sync(ServerPlayer player) {
-        NetworkHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new TrophySyncPacket(trophies));
+        NetworkHandler.INSTANCE.sendToClient(new TrophySyncPacket(trophies), player);
+    }
+
+    @Override
+    public ResourceLocation getFabricId() {
+        return new ResourceLocation(Trofers.MODID, "trophy_manager");
     }
 }

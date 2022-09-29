@@ -1,16 +1,18 @@
 package trofers.common.network;
 
+import me.pepperbell.simplenetworking.C2SPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import trofers.common.block.entity.TrophyBlockEntity;
 import trofers.common.trophy.Trophy;
 import trofers.common.trophy.TrophyManager;
 
-import java.util.function.Supplier;
-
-public class SetTrophyPacket {
+public class SetTrophyPacket implements C2SPacket {
 
     private final Trophy trophy;
     private final BlockPos blockPos;
@@ -27,15 +29,14 @@ public class SetTrophyPacket {
     }
 
     @SuppressWarnings("unused")
-    void encode(FriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer) {
         buffer.writeResourceLocation(trophy.id());
         buffer.writeBlockPos(blockPos);
     }
 
-    void handle(Supplier<NetworkEvent.Context> context) {
-        ServerPlayer player = context.get().getSender();
+    public void handle(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl listener, PacketSender sender, SimpleChannel simpleChannel) {
         if (player != null) {
-            context.get().enqueueWork(() -> {
+            server.execute(() -> {
                 if (player.isCreative()
                         && player.level.isLoaded(blockPos)
                         && player.level.getBlockEntity(blockPos) instanceof TrophyBlockEntity blockEntity
@@ -44,6 +45,5 @@ public class SetTrophyPacket {
                 }
             });
         }
-        context.get().setPacketHandled(true);
     }
 }

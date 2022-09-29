@@ -1,13 +1,13 @@
 package trofers.data;
 
+import io.github.fabricators_of_create.porting_lib.loot.GlobalLootModifierProvider;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemKilledByPlayerCondition;
-import net.minecraftforge.common.data.GlobalLootModifierProvider;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
 import trofers.Trofers;
 import trofers.common.init.ModItems;
 import trofers.common.loot.AddEntityTrophy;
@@ -34,7 +34,7 @@ public class LootModifiers extends GlobalLootModifierProvider {
         Map<String, Map<EntityType<?>, Trophy>> trophies = new HashMap<>();
         for (Trophy trophy : this.trophies.trophies) {
             EntityType<?> entityType = trophy.entity().getType();
-            String modid = ForgeRegistries.ENTITY_TYPES.getKey(trophy.entity().getType()).getNamespace();
+            String modid = Registry.ENTITY_TYPE.getKey(trophy.entity().getType()).getNamespace();
 
             if (!trophies.containsKey(modid)) {
                 trophies.put(modid, new HashMap<>());
@@ -42,7 +42,7 @@ public class LootModifiers extends GlobalLootModifierProvider {
             trophies.get(modid).put(entityType, trophy);
         }
 
-        if (ModList.get().isLoaded("tinkers_construct"))
+        if (FabricLoader.getInstance().isModLoaded("tinkers_construct"))
             TinkersConstructTrophies.addExtraTrophies(trophies);
 
         for (String modId : trophies.keySet()) {
@@ -51,7 +51,7 @@ public class LootModifiers extends GlobalLootModifierProvider {
                     RandomTrophyChanceCondition.randomTrophyChance().build()
             };
 
-            Map<ResourceLocation, ResourceLocation> trophyIds = trophies.get(modId).entrySet().stream().collect(Collectors.toMap(entry -> ForgeRegistries.ENTITY_TYPES.getKey(entry.getKey()), entry -> entry.getValue().id()));
+            Map<ResourceLocation, ResourceLocation> trophyIds = trophies.get(modId).entrySet().stream().collect(Collectors.toMap(entry -> Registry.ENTITY_TYPE.getKey(entry.getKey()), entry -> entry.getValue().id()));
             AddEntityTrophy modifier = new AddEntityTrophy(conditions, ModItems.SMALL_PLATE.get(), trophyIds);
 
             String name = modId.equals("minecraft") ? "vanilla" : modId;

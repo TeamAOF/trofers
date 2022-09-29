@@ -2,13 +2,13 @@ package trofers.data;
 
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
+import net.fabricmc.fabric.api.resource.conditions.v1.DefaultResourceConditions;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Registry;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.crafting.conditions.ModLoadedCondition;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
 import trofers.Trofers;
 import trofers.common.trophy.Trophy;
 import trofers.data.trophies.*;
@@ -30,13 +30,13 @@ public class Trophies implements DataProvider {
 
     protected void addTrophies() {
         trophies.addAll(VanillaTrophies.createTrophies());
-        if (ModList.get().isLoaded("alexsmobs"))
-            trophies.addAll(AlexsMobsTrophies.createTrophies());
-        if (ModList.get().isLoaded("quark"))
-            trophies.addAll(QuarkTrophies.createTrophies());
-        if (ModList.get().isLoaded("thermal"))
-            trophies.addAll(ThermalTrophies.createTrophies());
-        if (ModList.get().isLoaded("tinkers_construct"))
+//        if (FabricLoader.getInstance().isModLoaded("alexsmobs"))
+//            trophies.addAll(AlexsMobsTrophies.createTrophies());
+//        if (FabricLoader.getInstance().isModLoaded("quark"))
+//            trophies.addAll(QuarkTrophies.createTrophies());
+//        if (FabricLoader.getInstance().isModLoaded("thermal"))
+//            trophies.addAll(ThermalTrophies.createTrophies());
+        if (FabricLoader.getInstance().isModLoaded("tinkers_construct"))
             trophies.addAll(TinkersConstructTrophies.createTrophies());
     }
 
@@ -49,7 +49,7 @@ public class Trophies implements DataProvider {
 
         for (Trophy trophy : trophies) {
             // noinspection ConstantConditions
-            String modId = ForgeRegistries.ENTITY_TYPES.getKey(trophy.entity().getType()).getNamespace();
+            String modId = Registry.ENTITY_TYPE.getKey(trophy.entity().getType()).getNamespace();
             if (!resourceLocations.add(trophy.id())) {
                 throw new IllegalStateException("Duplicate trophy " + trophy.id());
             } else {
@@ -58,7 +58,7 @@ public class Trophies implements DataProvider {
                 if (modId.equals("minecraft")) {
                     object = trophy.toJson();
                 } else {
-                    object = trophy.toJson(new ModLoadedCondition(modId));
+                    object = trophy.toJson(DefaultResourceConditions.allModsLoaded(modId));
                 }
                 saveTrophy(cache, object, path);
             }

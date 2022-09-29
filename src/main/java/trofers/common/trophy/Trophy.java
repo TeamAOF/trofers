@@ -3,6 +3,8 @@ package trofers.common.trophy;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -11,8 +13,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.conditions.ICondition;
 import trofers.common.util.JsonHelper;
 
 import javax.annotation.Nullable;
@@ -112,15 +112,15 @@ public record Trophy(
         );
     }
 
-    public JsonObject toJson(ICondition... conditions) {
+    public JsonObject toJson(ConditionJsonProvider... conditions) {
         JsonObject result = new JsonObject();
 
         JsonArray array = new JsonArray();
-        for (ICondition condition : conditions) {
-            array.add(CraftingHelper.serialize(condition));
+        for (ConditionJsonProvider condition : conditions) {
+            array.add(condition.toJson());
         }
 
-        result.add("conditions", array);
+        result.add(ResourceConditions.CONDITIONS_KEY, array);
 
         return toJson(result);
     }

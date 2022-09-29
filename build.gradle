@@ -1,15 +1,9 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.spongepowered:mixingradle:0.7.+'
-    }
+plugins {
+    id "fabric-loom" version "0.12-SNAPSHOT"
+    id "maven-publish"
+    id "io.github.juuxel.loom-quiltflower" version "1.+"
+    id "org.quiltmc.quilt-mappings-on-loom" version "4.2.+"
 }
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.spongepowered.mixin'
 
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
@@ -21,53 +15,28 @@ archivesBaseName = 'trofers'
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
-minecraft {
-    mappings channel: 'official', version: '1.19.2'
-
-    runs {
-        client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', ''
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                trofers {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        server {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', ''
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                trofers {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        data {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', ''
-            property 'forge.logging.console.level', 'debug'
-
-            args '--mod', 'trofers', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-
-            mods {
-                trofers {
-                    source sourceSets.main
-                }
-            }
-        }
-    }
-}
 
 sourceSets.main.resources { 
   srcDir 'src/generated/resources'
 }
+
+loom {
+    runs {
+        datagen {
+            client()
+
+            name "Data Generation"
+            vmArg "-Dfabric-api.datagen"
+            vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"
+            vmArg "-Dfabric-api.datagen.modid=trofers"
+
+            property "trofers.data.existingDat", file("src/main/resources").absolutePath
+
+            runDir "build/datagen"
+        }
+    }
+}
+
 
 repositories {
     maven {
@@ -82,26 +51,49 @@ repositories {
     maven {
         url 'https://dvs1.progwml6.com/files/maven'
     }
+
+    maven { url = "https://mvn.devos.one/snapshots/" }
+    maven { url = "https://jitpack.io" }
+    maven { url = "https://maven.jamieswhiteshirt.com/libs-release" }
+    maven { url = "https://ladysnake.jfrog.io/artifactory/mods" }
+    maven { url = "https://api.modrinth.com/maven" }
+    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // Forge Config API Port
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.2-43.1.24'
+    minecraft "com.mojang:minecraft:${mc_version}"
 
-    compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}"))
-    compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
-    runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
+    mappings loom.officialMojangMappings()
 
-    implementation fg.deobf("curse.maven:citadel-331936:3987892")
-    implementation fg.deobf("curse.maven:alexsmobs-426558:3994223")
+    // dev environment
+    modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
+    include(modImplementation(fabricApi.module("fabric-data-generation-api-v1", project.fabric_version)))
 
-    compileOnly fg.deobf("com.teamcofh:cofh_core:1.18.2-1.6.3.19")
-    compileOnly fg.deobf("com.teamcofh:thermal_foundation:1.18.2-1.6.2.27")
+    modRuntimeOnly("maven.modrinth:lazydfu:0.1.2")
+    // modRuntimeOnly("com.github.Andrew6rant:InventoryTabs:inventorytabs-${inventorytabs_version}")
+
+    // dependencies
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
+    modImplementation(include("io.github.fabricators_of_create.Porting-Lib:porting-lib:${project.port_lib_version}+${project.mc_version}"))
+    modImplementation(include("net.minecraftforge:forgeconfigapiport-fabric:${project.config_api_version}"))
+    modImplementation("com.github.AlphaMode:fakeconfig:master-SNAPSHOT") { exclude(group: "net.fabricmc.fabric-api") }
+    modImplementation("com.github.AlphaMode:fakeconfigtoml:master-SNAPSHOT") { exclude(group: "net.fabricmc.fabric-api") }
+
+    modCompileOnly(("mezz.jei:jei-${mc_version}-common-api:${jei_version}"))
+    modCompileOnly "mezz.jei:jei-${mc_version}-fabric-api:${jei_version}"
+    modRuntimeOnly "mezz.jei:jei-${mc_version}-fabric:${jei_version}"
+
+//    implementation fg.deobf("curse.maven:citadel-331936:3987892")
+//    implementation fg.deobf("curse.maven:alexsmobs-426558:3994223")
+
+//    compileOnly fg.deobf("com.teamcofh:cofh_core:1.18.2-1.6.3.19")
+//    compileOnly fg.deobf("com.teamcofh:thermal_foundation:1.18.2-1.6.2.27")
 
     // compileOnly fg.deobf("slimeknights.mantle:Mantle:1.18.2-1.9.27")
     // compileOnly fg.deobf("slimeknights.tconstruct:TConstruct:1.18.2-3.5.1.32")
 
-    implementation fg.deobf("vazkii.autoreglib:AutoRegLib:1.8-54.115")
-    implementation fg.deobf("vazkii.quark:Quark:3.3-372.2483")
+//    implementation fg.deobf("vazkii.autoreglib:AutoRegLib:1.8-54.115")
+//    implementation fg.deobf("vazkii.quark:Quark:3.3-372.2483")
 }
 
 jar {

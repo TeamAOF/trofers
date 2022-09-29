@@ -3,15 +3,15 @@ package trofers.common.loot;
 import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.fabricators_of_create.porting_lib.loot.IGlobalLootModifier;
+import io.github.fabricators_of_create.porting_lib.loot.LootModifier;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
-import net.minecraftforge.common.loot.LootModifier;
-import net.minecraftforge.registries.ForgeRegistries;
 import trofers.Trofers;
 import trofers.common.trophy.TrophyManager;
 
@@ -21,7 +21,7 @@ public class AddTrophy extends LootModifier {
 
     public static final Supplier<Codec<AddTrophy>> CODEC = Suppliers.memoize(
             () -> RecordCodecBuilder.create(instance -> codecStart(instance)
-                    .and(ForgeRegistries.ITEMS.getCodec().fieldOf("trophyBase").forGetter(m -> m.trophyBase))
+                    .and(Registry.ITEM.byNameCodec().fieldOf("trophyBase").forGetter(m -> m.trophyBase))
                     .and(ResourceLocation.CODEC.fieldOf("trophyId").forGetter(m -> m.trophyId))
                     .apply(instance, AddTrophy::new)
             )

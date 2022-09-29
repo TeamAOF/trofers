@@ -1,6 +1,9 @@
 package trofers.common.item;
 
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
@@ -8,19 +11,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import trofers.common.block.TrophyBlock;
 import trofers.common.block.entity.TrophyBlockEntity;
 import trofers.common.trophy.Trophy;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.function.Consumer;
 
 public class TrophyItem extends BlockItem {
 
     public TrophyItem(TrophyBlock block, Properties properties) {
         super(block, properties);
+        EnvExecutor.runWhenOn(EnvType.CLIENT, () -> this::initializeClient);
     }
 
     @Override
@@ -59,16 +61,8 @@ public class TrophyItem extends BlockItem {
         return super.getCreatorModId(stack);
     }
 
-    @Override
-    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(new IClientItemExtensions() {
-
-            private final BlockEntityWithoutLevelRenderer renderer = new TrophyItemRenderer();
-
-            @Override
-            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                return renderer;
-            }
-        });
+    @Environment(EnvType.CLIENT)
+    public void initializeClient() {
+        BuiltinItemRendererRegistry.INSTANCE.register(this, new TrophyItemRenderer());
     }
 }

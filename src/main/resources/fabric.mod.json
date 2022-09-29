@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "trofers",
+  "version": "${version}",
+  "name": "Trofers",
+  "description": "Adds trophies that can be customized through data packs",
+  "authors": [
+    "ochotonida ",
+    "AlphaMode"
+  ],
+  "license": "MIT",
+  "icon": "logo.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "trofers.TrofersClient"
+    ],
+    "main": [
+      "trofers.Trofers"
+    ],
+    "fabric-datagen": [
+      "trofers.data.DataGenerators"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.9",
+    "fabric": ">=0.62.0",
+    "minecraft": "1.19.x",
+    "java": ">=17"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}

@@ -3,6 +3,7 @@ package trofers.common.trophy;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -10,7 +11,6 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistries;
 import trofers.common.util.JsonHelper;
 
 import javax.annotation.Nullable;
@@ -60,7 +60,7 @@ public class EntityInfo {
 
         CompoundTag entityTag = this.nbt.copy();
         // noinspection ConstantConditions
-        entityTag.putString("id", ForgeRegistries.ENTITY_TYPES.getKey(getType()).toString());
+        entityTag.putString("id", Registry.ENTITY_TYPE.getKey(getType()).toString());
         if (!entityTag.hasUUID("UUID")) {
             entityTag.putUUID("UUID", new UUID(1L, 1L));
         }
@@ -70,20 +70,20 @@ public class EntityInfo {
 
     public void toNetwork(FriendlyByteBuf buffer) {
         // noinspection ConstantConditions
-        buffer.writeResourceLocation(ForgeRegistries.ENTITY_TYPES.getKey(getType()));
+        buffer.writeResourceLocation(Registry.ENTITY_TYPE.getKey(getType()));
         buffer.writeNbt(nbt);
         buffer.writeBoolean(isAnimated);
     }
 
     public static EntityInfo fromNetwork(FriendlyByteBuf buffer) {
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(buffer.readResourceLocation());
+        EntityType<?> type = Registry.ENTITY_TYPE.get(buffer.readResourceLocation());
         return new EntityInfo(type, buffer.readNbt(), buffer.readBoolean());
     }
 
     public JsonObject toJson() {
         JsonObject result = new JsonObject();
         // noinspection ConstantConditions
-        result.addProperty("type", ForgeRegistries.ENTITY_TYPES.getKey(getType()).toString());
+        result.addProperty("type", Registry.ENTITY_TYPE.getKey(getType()).toString());
         if (!getTag().isEmpty()) {
             result.addProperty("nbt", getTag().toString());
         }
@@ -95,10 +95,10 @@ public class EntityInfo {
 
     public static EntityInfo fromJson(JsonObject object) {
         ResourceLocation typeID = new ResourceLocation(GsonHelper.getAsString(object, "type"));
-        if (!ForgeRegistries.ENTITY_TYPES.containsKey(typeID)) {
+        if (!Registry.ENTITY_TYPE.containsKey(typeID)) {
             throw new JsonParseException(String.format("Unknown entity type %s", typeID));
         }
-        EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(typeID);
+        EntityType<?> type = Registry.ENTITY_TYPE.get(typeID);
         CompoundTag nbt = new CompoundTag();
         if (object.has("nbt")) {
             JsonElement nbtElement = object.get("nbt");

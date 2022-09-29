@@ -1,11 +1,11 @@
 package trofers.data;
 
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ModelBuilder;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.registries.ForgeRegistries;
 import trofers.Trofers;
 import trofers.common.block.PillarTrophyBlock;
 import trofers.common.block.PlateTrophyBlock;
@@ -50,14 +50,14 @@ public class BlockStates extends BlockStateProvider {
 
         setTextures(modelBuilder, block);
         // noinspection ConstantConditions
-        String overlayTexture = Trofers.MODID + ":block/" + ForgeRegistries.BLOCKS.getKey(block).getPath() + "_overlay";
+        String overlayTexture = Trofers.MODID + ":block/" + Registry.BLOCK.getKey(block).getPath() + "_overlay";
         modelBuilder.texture("overlay", overlayTexture);
         modelBuilder.renderType("cutout");
     }
 
     public static void setTextures(ModelBuilder<?> modelBuilder, TrophyBlock block) {
         // noinspection ConstantConditions
-        String name = ForgeRegistries.BLOCKS.getKey(block).getPath();
+        String name = Registry.BLOCK.getKey(block).getPath();
         String texturePath = Trofers.MODID + ":block/" + name.replace("plate", "pillar");
         modelBuilder
                 .texture("particle", "#top")

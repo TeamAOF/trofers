@@ -1,6 +1,9 @@
 package trofers.data;
 
 import com.mojang.datafixers.util.Pair;
+import io.github.fabricators_of_create.porting_lib.data.ModdedLootTableProvider;
+import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.LootPool;
@@ -11,8 +14,6 @@ import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.RegistryObject;
 import trofers.Trofers;
 import trofers.common.block.TrophyBlock;
 import trofers.common.init.ModBlocks;
@@ -25,7 +26,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class LootTables extends net.minecraft.data.loot.LootTableProvider {
+public class LootTables extends ModdedLootTableProvider {
 
     private final List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootContextParamSet>> lootTables = new ArrayList<>();
 
@@ -39,13 +40,13 @@ public class LootTables extends net.minecraft.data.loot.LootTableProvider {
 
         addBlockLootTables();
         addTrophyLootTables(new VanillaLootTables());
-        if (ModList.get().isLoaded("alexsmobs"))
-            addTrophyLootTables(new AlexsMobsLootTables());
-        if (ModList.get().isLoaded("quark"))
-            addTrophyLootTables(new QuarkLootTables());
-        if (ModList.get().isLoaded("thermal"))
-            addTrophyLootTables(new ThermalLootTables());
-        if (ModList.get().isLoaded("tinkers_construct"))
+//        if (FabricLoader.getInstance().isModLoaded("alexsmobs"))
+//            addTrophyLootTables(new AlexsMobsLootTables());
+//        if (FabricLoader.getInstance().isModLoaded("quark"))
+//            addTrophyLootTables(new QuarkLootTables());
+//        if (FabricLoader.getInstance().isModLoaded("thermal"))
+//            addTrophyLootTables(new ThermalLootTables());
+        if (FabricLoader.getInstance().isModLoaded("tinkers_construct"))
             addTrophyLootTables(new TinkersConstructLootTables());
 
         return lootTables;

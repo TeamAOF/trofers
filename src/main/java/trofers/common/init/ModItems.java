@@ -1,12 +1,13 @@
 package trofers.common.init;
 
+import io.github.fabricators_of_create.porting_lib.util.LazyItemGroup;
+import io.github.fabricators_of_create.porting_lib.util.LazyRegistrar;
+import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.RegistryObject;
 import trofers.Trofers;
 import trofers.common.block.TrophyBlock;
 import trofers.common.item.TrophyItem;
@@ -17,9 +18,9 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public class ModItems {
 
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registry.ITEM_REGISTRY, Trofers.MODID);
+    public static final LazyRegistrar<Item> ITEMS = LazyRegistrar.create(Registry.ITEM_REGISTRY, Trofers.MODID);
 
-    public static final CreativeModeTab CREATIVE_TAB = new CreativeModeTab(Trofers.MODID) {
+    public static final CreativeModeTab CREATIVE_TAB = new LazyItemGroup(Trofers.MODID) {
         @Override
         public ItemStack makeIcon() {
             ItemStack result = new ItemStack(MEDIUM_PILLAR.get());

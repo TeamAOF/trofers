@@ -2,6 +2,7 @@ package trofers.common.trophy;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -9,7 +10,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 
@@ -64,14 +64,14 @@ public record EffectInfo(@Nullable SoundInfo sound, RewardInfo rewards) {
 
         private void toNetwork(FriendlyByteBuf buffer) {
             // noinspection ConstantConditions
-            buffer.writeResourceLocation(ForgeRegistries.SOUND_EVENTS.getKey(soundEvent()));
+            buffer.writeResourceLocation(Registry.SOUND_EVENT.getKey(soundEvent()));
             buffer.writeFloat(volume());
             buffer.writeFloat(pitch());
         }
 
         private static SoundInfo fromNetwork(FriendlyByteBuf buffer) {
             return new SoundInfo(
-                    ForgeRegistries.SOUND_EVENTS.getValue(buffer.readResourceLocation()),
+                    Registry.SOUND_EVENT.get(buffer.readResourceLocation()),
                     buffer.readFloat(),
                     buffer.readFloat()
             );
@@ -80,7 +80,7 @@ public record EffectInfo(@Nullable SoundInfo sound, RewardInfo rewards) {
         private JsonObject toJson() {
             JsonObject result = new JsonObject();
             // noinspection ConstantConditions
-            result.addProperty("soundEvent", ForgeRegistries.SOUND_EVENTS.getKey(soundEvent()).toString());
+            result.addProperty("soundEvent", Registry.SOUND_EVENT.getKey(soundEvent()).toString());
             if (volume() != 1) {
                 result.addProperty("volume", volume());
             }
@@ -92,10 +92,10 @@ public record EffectInfo(@Nullable SoundInfo sound, RewardInfo rewards) {
 
         private static SoundInfo fromJson(JsonObject object) {
             ResourceLocation soundEventID = new ResourceLocation(GsonHelper.getAsString(object, "soundEvent"));
-            if (!ForgeRegistries.SOUND_EVENTS.containsKey(soundEventID)) {
+            if (!Registry.SOUND_EVENT.containsKey(soundEventID)) {
                 throw new JsonParseException(String.format("Unknown sound event: %s", soundEventID));
             }
-            SoundEvent soundEvent = ForgeRegistries.SOUND_EVENTS.getValue(soundEventID);
+            SoundEvent soundEvent = Registry.SOUND_EVENT.get(soundEventID);
 
             float volume = Trophy.readOptionalFloat(object, "volume", 1);
             float pitch = Trophy.readOptionalFloat(object, "pitch", 1);
@@ -146,7 +146,7 @@ public record EffectInfo(@Nullable SoundInfo sound, RewardInfo rewards) {
                     JsonObject statusEffect = new JsonObject();
                     result.add("statusEffect", statusEffect);
                     // noinspection ConstantConditions
-                    statusEffect.addProperty("effect", ForgeRegistries.MOB_EFFECTS.getKey(effect.getEffect()).toString());
+                    statusEffect.addProperty("effect", Registry.MOB_EFFECT.getKey(effect.getEffect()).toString());
                     statusEffect.addProperty("duration", effect.getDuration());
                     if (effect.getAmplifier() != 0) {
                         statusEffect.addProperty("amplifier", effect.getAmplifier());
@@ -168,10 +168,10 @@ public record EffectInfo(@Nullable SoundInfo sound, RewardInfo rewards) {
             if (object.has("statusEffect")) {
                 JsonObject effectObject = GsonHelper.getAsJsonObject(object, "statusEffect");
                 ResourceLocation effectID = new ResourceLocation(GsonHelper.getAsString(effectObject, "effect"));
-                if (!ForgeRegistries.MOB_EFFECTS.containsKey(effectID)) {
+                if (!Registry.MOB_EFFECT.containsKey(effectID)) {
                     throw new JsonParseException(String.format("Unknown effect: %s", effectID));
                 }
-                MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(effectID);
+                MobEffect effect = Registry.MOB_EFFECT.get(effectID);
                 int duration = GsonHelper.getAsInt(effectObject, "duration");
                 int amplifier = 0;
                 if (effectObject.has("amplifier")) {

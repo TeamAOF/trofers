@@ -3,7 +3,10 @@ package trofers.common.loot;
 import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.fabricators_of_create.porting_lib.loot.IGlobalLootModifier;
+import io.github.fabricators_of_create.porting_lib.loot.LootModifier;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -11,9 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.IGlobalLootModifier;
-import net.minecraftforge.common.loot.LootModifier;
-import net.minecraftforge.registries.ForgeRegistries;
 import trofers.Trofers;
 import trofers.common.trophy.TrophyManager;
 
@@ -26,7 +26,7 @@ public class AddEntityTrophy extends LootModifier {
 
     public static final Supplier<Codec<AddEntityTrophy>> CODEC = Suppliers.memoize(
             () -> RecordCodecBuilder.create(instance -> codecStart(instance)
-                    .and(ForgeRegistries.ITEMS.getCodec().fieldOf("trophyBase").forGetter(m -> m.trophyBase))
+                    .and(Registry.ITEM.byNameCodec().fieldOf("trophyBase").forGetter(m -> m.trophyBase))
                     .and(Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC)
                                     .fieldOf("trophies").forGetter(m -> m.trophies))
                     .apply(instance, AddEntityTrophy::new)
@@ -43,8 +43,8 @@ public class AddEntityTrophy extends LootModifier {
         this.trophies = trophies;
         entities = new HashSet<>();
         for (ResourceLocation entityTypeId : trophies.keySet()) {
-            if (ForgeRegistries.ENTITY_TYPES.containsKey(entityTypeId)) {
-                entities.add(ForgeRegistries.ENTITY_TYPES.getValue(entityTypeId));
+            if (Registry.ENTITY_TYPE.containsKey(entityTypeId)) {
+                entities.add(Registry.ENTITY_TYPE.get(entityTypeId));
             } else {
                 Trofers.LOGGER.debug("Skipping trophy loot modifier entry for missing entity type " + entityTypeId);
             }
@@ -61,7 +61,7 @@ public class AddEntityTrophy extends LootModifier {
         if (context.hasParam(LootContextParams.THIS_ENTITY)) {
             EntityType<?> entityTypeId = context.getParam(LootContextParams.THIS_ENTITY).getType();
             if (entities.contains(entityTypeId)) {
-                ResourceLocation trophyId = trophies.get(ForgeRegistries.ENTITY_TYPES.getKey(entityTypeId));
+                ResourceLocation trophyId = trophies.get(Registry.ENTITY_TYPE.getKey(entityTypeId));
                 if (trophyId != null) {
                     if (TrophyManager.get(trophyId) == null) {
                         Trofers.LOGGER.error("Failed to find trophy with invalid id '{}'", trophyId);

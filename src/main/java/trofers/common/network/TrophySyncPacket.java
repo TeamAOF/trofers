@@ -1,17 +1,20 @@
 package trofers.common.network;
 
+import me.pepperbell.simplenetworking.S2CPacket;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkEvent;
 import trofers.common.block.entity.TrophyScreen;
 import trofers.common.trophy.Trophy;
 import trofers.common.trophy.TrophyManager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
-public class TrophySyncPacket {
+public class TrophySyncPacket implements S2CPacket {
 
     private final Map<ResourceLocation, Trophy> trophies;
 
@@ -29,7 +32,7 @@ public class TrophySyncPacket {
     }
 
     @SuppressWarnings("unused")
-    void encode(FriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer) {
         trophies.values().forEach(trophy -> {
             buffer.writeBoolean(true);
             trophy.toNetwork(buffer);
@@ -37,11 +40,10 @@ public class TrophySyncPacket {
         buffer.writeBoolean(false);
     }
 
-    void handle(Supplier<NetworkEvent.Context> context) {
-        context.get().enqueueWork(() -> {
+    public void handle(Minecraft client, ClientPacketListener listener, PacketSender sender, SimpleChannel simpleChannel) {
+        client.execute(() -> {
             TrophyManager.setTrophies(trophies);
             TrophyScreen.SearchTreeManager.createSearchTree();
         });
-        context.get().setPacketHandled(true);
     }
 }

@@ -1,5 +1,6 @@
 package trofers.data.trophies;
 
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -15,7 +16,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
 import trofers.Trofers;
 import trofers.common.trophy.*;
 
@@ -132,7 +132,7 @@ public class EntityTrophyBuilder {
 
     @SuppressWarnings("ConstantConditions")
     public String getModId() {
-        return ForgeRegistries.ENTITY_TYPES.getKey(entityType).getNamespace();
+        return Registry.ENTITY_TYPE.getKey(entityType).getNamespace();
     }
 
     public Trophy createTrophy() {
@@ -160,10 +160,10 @@ public class EntityTrophyBuilder {
     @SuppressWarnings("ConstantConditions")
     protected ResourceLocation createId() {
         String folder = "";
-        if (!ForgeRegistries.ENTITY_TYPES.getKey(entityType).getNamespace().equals("minecraft")) {
-            folder = ForgeRegistries.ENTITY_TYPES.getKey(entityType).getNamespace() + "/";
+        if (!Registry.ENTITY_TYPE.getKey(entityType).getNamespace().equals("minecraft")) {
+            folder = Registry.ENTITY_TYPE.getKey(entityType).getNamespace() + "/";
         }
-        return new ResourceLocation(Trofers.MODID, folder + ForgeRegistries.ENTITY_TYPES.getKey(entityType).getPath());
+        return new ResourceLocation(Trofers.MODID, folder + Registry.ENTITY_TYPE.getKey(entityType).getPath());
     }
 
     protected Component createTrophyName() {
@@ -187,17 +187,17 @@ public class EntityTrophyBuilder {
     protected SoundEvent getSoundEvent() {
         if (soundEvent == null) {
             ResourceLocation soundId = getDefaultSoundEventId();
-            if (!ForgeRegistries.SOUND_EVENTS.containsKey(soundId)) {
-                throw new IllegalStateException("No ambient sound for entity " + ForgeRegistries.ENTITY_TYPES.getKey(entityType));
+            if (!Registry.SOUND_EVENT.containsKey(soundId)) {
+                throw new IllegalStateException("No ambient sound for entity " + Registry.ENTITY_TYPE.getKey(entityType));
             }
-            soundEvent = ForgeRegistries.SOUND_EVENTS.getValue(soundId);
+            soundEvent = Registry.SOUND_EVENT.get(soundId);
         }
         return soundEvent;
     }
 
     @SuppressWarnings("ConstantConditions")
     protected ResourceLocation getDefaultSoundEventId() {
-        ResourceLocation entityId = ForgeRegistries.ENTITY_TYPES.getKey(entityType);
+        ResourceLocation entityId = Registry.ENTITY_TYPE.getKey(entityType);
         return new ResourceLocation(entityId.getNamespace(), "entity.%s.ambient".formatted(entityId.getPath()));
     }
 
@@ -206,8 +206,8 @@ public class EntityTrophyBuilder {
         if (!effect.isEmpty() || lootTable != null) {
             return lootTable;
         }
-        ResourceLocation entityId = ForgeRegistries.ENTITY_TYPES.getKey(entityType);
+        ResourceLocation entityId = Registry.ENTITY_TYPE.getKey(entityType);
         String modId = entityId.getNamespace().equals("minecraft") ? "" : entityId.getNamespace() + "/";
-        return new ResourceLocation(Trofers.MODID, String.format("trophies/%s", modId + ForgeRegistries.ENTITY_TYPES.getKey(entityType).getPath()));
+        return new ResourceLocation(Trofers.MODID, String.format("trophies/%s", modId + Registry.ENTITY_TYPE.getKey(entityType).getPath()));
     }
 }

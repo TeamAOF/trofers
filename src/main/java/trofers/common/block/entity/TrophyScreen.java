@@ -5,6 +5,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.fabricators_of_create.porting_lib.util.KeyBindingHelper;
+import io.github.fabricators_of_create.porting_lib.util.client.ExtendedButton;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -21,13 +24,13 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.searchtree.FullTextSearchTree;
 import net.minecraft.client.searchtree.RefreshableSearchTree;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.gui.widget.ExtendedButton;
-import net.minecraftforge.registries.ForgeRegistries;
 import trofers.Trofers;
 import trofers.common.network.NetworkHandler;
 import trofers.common.network.SetTrophyPacket;
@@ -103,7 +106,7 @@ public class TrophyScreen extends Screen {
         } else if (
                 !searchBox.isFocused()
                 && minecraft != null
-                && minecraft.options.keyInventory.isActiveAndMatches(key)
+                && KeyBindingHelper.isActiveAndMatches(minecraft.options.keyInventory, key)
         ) {
             this.onClose();
             return true;
@@ -302,7 +305,7 @@ public class TrophyScreen extends Screen {
                     CrashReport crashReport = CrashReport.forThrowable(exception, "Rendering item");
                     CrashReportCategory category = crashReport.addCategory("Item being rendered");
                     category.setDetail("Item Type", () -> String.valueOf(item.getItem()));
-                    category.setDetail("Registry Name", () -> String.valueOf(ForgeRegistries.ITEMS.getKey(item.getItem())));
+                    category.setDetail("Registry Name", () -> String.valueOf(Registry.ITEM.getKey(item.getItem())));
                     category.setDetail("Item Damage", () -> String.valueOf(item.getDamageValue()));
                     category.setDetail("Item NBT", () -> String.valueOf(item.getTag()));
                     category.setDetail("Item Foil", () -> String.valueOf(item.hasFoil()));
@@ -314,7 +317,7 @@ public class TrophyScreen extends Screen {
 
         @SuppressWarnings("deprecation")
         protected void renderGuiItem(ItemStack item, int x, int y, float scale, BakedModel model) {
-            Minecraft.getInstance().textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS).setFilter(false, false);
+            Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).setFilter(false, false);
             RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
             RenderSystem.enableBlend();
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
@@ -346,7 +349,7 @@ public class TrophyScreen extends Screen {
         }
     }
 
-    public static class SearchTreeManager implements ResourceManagerReloadListener {
+    public static class SearchTreeManager implements ResourceManagerReloadListener, IdentifiableResourceReloadListener {
 
         private static RefreshableSearchTree<Trophy> searchTree;
 
@@ -375,6 +378,11 @@ public class TrophyScreen extends Screen {
             );
 
             searchTree.refresh();
+        }
+
+        @Override
+        public ResourceLocation getFabricId() {
+            return new ResourceLocation(Trofers.MODID, "search_tree_manager");
         }
     }
 }

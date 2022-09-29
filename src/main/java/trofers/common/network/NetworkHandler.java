@@ -1,22 +1,24 @@
 package trofers.common.network;
 
+import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
+import me.pepperbell.simplenetworking.SimpleChannel;
+import net.fabricmc.api.EnvType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
 import trofers.Trofers;
 
 public class NetworkHandler {
 
     private static final String PROTOCOL_VERSION = "1";
-    public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(Trofers.MODID, "main"),
-            () -> PROTOCOL_VERSION,
-            PROTOCOL_VERSION::equals,
-            PROTOCOL_VERSION::equals
+    public static final SimpleChannel INSTANCE = new SimpleChannel(
+            new ResourceLocation(Trofers.MODID, "main")
     );
 
     public static void register() {
-        INSTANCE.registerMessage(0, SetTrophyPacket.class, SetTrophyPacket::encode, SetTrophyPacket::new, SetTrophyPacket::handle);
-        INSTANCE.registerMessage(1, TrophySyncPacket.class, TrophySyncPacket::encode, TrophySyncPacket::new, TrophySyncPacket::handle);
+        INSTANCE.registerC2SPacket(SetTrophyPacket.class, 0);
+        INSTANCE.registerS2CPacket(TrophySyncPacket.class, 1);
+
+        INSTANCE.initServerListener();
+
+        EnvExecutor.runWhenOn(EnvType.CLIENT, () -> INSTANCE::initClientListener);
     }
 }

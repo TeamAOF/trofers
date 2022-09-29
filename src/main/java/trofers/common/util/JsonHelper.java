@@ -2,16 +2,17 @@ package trofers.common.util;
 
 import com.google.gson.*;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import io.github.fabricators_of_create.porting_lib.crafting.CraftingHelper;
+import net.fabricmc.fabric.api.resource.conditions.v1.ConditionJsonProvider;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.common.crafting.conditions.ICondition;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public abstract class JsonHelper {
 
@@ -24,7 +25,7 @@ public abstract class JsonHelper {
     public static JsonObject serializeItem(ItemStack item) {
         JsonObject result = new JsonObject();
         // noinspection ConstantConditions
-        result.addProperty("item", ForgeRegistries.ITEMS.getKey(item.getItem()).toString());
+        result.addProperty("item", Registry.ITEM.getKey(item.getItem()).toString());
         if (item.getCount() != 1) {
             result.addProperty("count", item.getCount());
         }
@@ -47,23 +48,26 @@ public abstract class JsonHelper {
         }
     }
 
-    public static List<ICondition> deserializeConditions(JsonObject object, String memberName) {
+    public static List<Boolean> deserializeConditions(JsonObject object, String memberName) {
         JsonArray conditions = GsonHelper.getAsJsonArray(object, memberName);
-        List<ICondition> result = new ArrayList<>();
-        for (JsonElement condition : conditions) {
-            if (!condition.isJsonObject()) {
+        List<Boolean> result = new ArrayList<>();
+
+        for(int x = 0; x < conditions.size(); ++x) {
+            if (!conditions.get(x).isJsonObject()) {
                 throw new JsonSyntaxException("Conditions must be an array of JsonObjects");
             }
 
-            result.add(CraftingHelper.getCondition(condition.getAsJsonObject()));
+            JsonObject json = conditions.get(x).getAsJsonObject();
+            result.add(CraftingHelper.getConditionPredicate(json).test(json));
         }
+
         return result;
     }
 
-    public static JsonElement serializeConditions(List<ICondition> conditions) {
+    public static JsonElement serializeConditions(List<ConditionJsonProvider> conditions) {
         JsonArray result = new JsonArray();
-        for (ICondition condition : conditions) {
-            result.add(CraftingHelper.serialize(condition));
+        for (ConditionJsonProvider condition : conditions) {
+            result.add(condition.toJson());
         }
         return result;
     }

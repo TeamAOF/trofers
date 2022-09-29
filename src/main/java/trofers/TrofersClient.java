@@ -1,15 +1,14 @@
 package trofers;
 
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import io.github.fabricators_of_create.porting_lib.util.RegistryObject;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.RegistryObject;
 import trofers.common.block.entity.TrophyBlockEntity;
 import trofers.common.block.entity.TrophyBlockEntityRenderer;
 import trofers.common.block.entity.TrophyScreen;
@@ -18,27 +17,26 @@ import trofers.common.init.ModBlocks;
 import trofers.common.init.ModItems;
 import trofers.common.trophy.Trophy;
 
-public class TrofersClient {
+public class TrofersClient implements ClientModInitializer {
 
-    public TrofersClient() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-        modEventBus.addListener(this::onClientSetup);
-        modEventBus.addListener(this::onBlockColorHandler);
-        modEventBus.addListener(this::onItemColorHandler);
-        modEventBus.addListener(this::onRegisterClientReloadListeners);
+    @Override
+    public void onInitializeClient() {
+        this.onClientSetup();
+        this.onBlockColorHandler();
+        this.onItemColorHandler();
+        this.onRegisterClientReloadListeners();
     }
 
-    public void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> BlockEntityRenderers.register(ModBlockEntityTypes.TROPHY.get(), TrophyBlockEntityRenderer::new));
+    public void onClientSetup() {
+        BlockEntityRendererRegistry.register(ModBlockEntityTypes.TROPHY.get(), TrophyBlockEntityRenderer::new);
     }
 
-    public void onRegisterClientReloadListeners(RegisterClientReloadListenersEvent event) {
-        event.registerReloadListener(new TrophyScreen.SearchTreeManager());
+    public void onRegisterClientReloadListeners() {
+        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new TrophyScreen.SearchTreeManager());
     }
 
-    public void onBlockColorHandler(RegisterColorHandlersEvent.Block event) {
-        event.register((state, level, pos, index) -> {
+    public void onBlockColorHandler() {
+        ColorProviderRegistry.BLOCK.register((state, level, pos, index) -> {
             if (index >= 0 && index < 3 && level != null && pos != null) {
                 BlockEntity blockEntity = level.getBlockEntity(pos);
                 if (blockEntity instanceof TrophyBlockEntity trophyBlockEntity) {
@@ -58,8 +56,8 @@ public class TrofersClient {
         }, ModBlocks.TROPHIES.stream().map(RegistryObject::get).toArray(Block[]::new));
     }
 
-    public void onItemColorHandler(RegisterColorHandlersEvent.Item event) {
-        event.register((stack, index) -> {
+    public void onItemColorHandler() {
+        ColorProviderRegistry.ITEM.register((stack, index) -> {
             Trophy trophy = Trophy.getTrophy(stack);
             if (trophy != null) {
                 if (index == 0) {

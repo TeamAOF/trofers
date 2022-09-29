@@ -130,8 +130,8 @@ public abstract class TrophyBlock extends BaseEntityBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
-        ItemStack result = super.getCloneItemStack(state, target, world, pos, player);
+    public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
+        ItemStack result = super.getCloneItemStack(world, pos, state);
         if (world.getBlockEntity(pos) instanceof TrophyBlockEntity blockEntity) {
             if (blockEntity.getTrophyID() != null) {
                 result.getOrCreateTagElement("BlockEntityTag").putString("Trophy", blockEntity.getTrophyID().toString());

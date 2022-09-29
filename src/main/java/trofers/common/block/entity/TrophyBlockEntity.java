@@ -1,5 +1,7 @@
 package trofers.common.block.entity;
 
+import io.github.fabricators_of_create.porting_lib.block.CustomDataPacketHandlingBlockEntity;
+import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -36,7 +38,7 @@ import trofers.common.trophy.TrophyManager;
 
 import javax.annotation.Nullable;
 
-public class TrophyBlockEntity extends BlockEntity {
+public class TrophyBlockEntity extends BlockEntity implements CustomRenderBoundingBoxBlockEntity, CustomDataPacketHandlingBlockEntity {
 
     public static final BlockEntityTicker<TrophyBlockEntity> TICKER = (level, pos, state, blockEntity) -> blockEntity.tick();
 

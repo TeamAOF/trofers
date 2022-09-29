@@ -1,6 +1,7 @@
 package trofers.common.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -14,18 +15,10 @@ import trofers.common.trophy.Trophy;
 import trofers.common.block.TrophyBlock;
 import trofers.common.block.entity.TrophyBlockEntityRenderer;
 
-public class TrophyItemRenderer extends BlockEntityWithoutLevelRenderer {
-
-    @SuppressWarnings("ConstantConditions")
-    public TrophyItemRenderer() {
-        super(null, null);
-    }
+public class TrophyItemRenderer implements BuiltinItemRendererRegistry.DynamicItemRenderer {
 
     @Override
-    public void onResourceManagerReload(ResourceManager manager) { }
-
-    @Override
-    public void renderByItem(
+    public void render(
             ItemStack stack,
             ItemTransforms.TransformType transformType,
             PoseStack poseStack,
