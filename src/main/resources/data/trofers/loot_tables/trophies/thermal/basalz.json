@@ -8,8 +8,8 @@
           "type": "trofers:optional_item",
           "when": [
             {
-              "modid": "thermal",
-              "type": "forge:mod_loaded"
+              "values": ["thermal"],
+              "condition": "fabric:all_mods_loaded"
             }
           ],
           "name": "thermal:basalz_rod"

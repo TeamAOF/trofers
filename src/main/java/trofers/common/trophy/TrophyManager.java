@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import io.github.fabricators_of_create.porting_lib.crafting.CraftingHelper;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -52,7 +53,7 @@ public class TrophyManager extends SimpleJsonResourceReloadListener implements I
             ResourceLocation id = entry.getKey();
             JsonElement element = entry.getValue();
             try {
-                if (element.isJsonObject() && element.getAsJsonObject().has("conditions") && !CraftingHelper.processConditions(GsonHelper.getAsJsonArray(element.getAsJsonObject(), "conditions"))) {
+                if (element.isJsonObject() && element.getAsJsonObject().has(ResourceConditions.CONDITIONS_KEY) && !CraftingHelper.processConditions(GsonHelper.getAsJsonArray(element.getAsJsonObject(), ResourceConditions.CONDITIONS_KEY))) {
                     amountSkipped++;
                 } else {
                     trophies.put(id, Trophy.fromJson(element, id));

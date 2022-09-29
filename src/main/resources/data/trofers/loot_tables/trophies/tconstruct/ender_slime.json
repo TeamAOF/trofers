@@ -12,8 +12,8 @@
           "type": "trofers:optional_item",
           "when": [
             {
-              "modid": "tconstruct",
-              "type": "forge:mod_loaded"
+              "values": ["tconstruct"],
+              "condition": "fabric:all_mods_loaded"
             }
           ],
           "name": "tconstruct:ender_slime_ball"

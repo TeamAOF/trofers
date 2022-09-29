@@ -30,7 +30,7 @@ loom {
             vmArg "-Dfabric-api.datagen.output-dir=${file("src/generated/resources")}"
             vmArg "-Dfabric-api.datagen.modid=trofers"
 
-            property "trofers.data.existingDat", file("src/main/resources").absolutePath
+            property "trofers.data.existingData", file("src/main/resources").absolutePath
 
             runDir "build/datagen"
         }
@@ -110,7 +110,15 @@ jar {
     }
 }
 
-jar.finalizedBy('reobfJar')
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+jar.finalizedBy('remapJar')
 
 publishing {
     publications {
